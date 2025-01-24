@@ -17,7 +17,7 @@ You can interact with DuckDuckAI by calling the `ask` function. It supports both
 ### Example
 
 ```py
-from DuckDuckAI import ask
+from duckduckai import ask
 
 # Fetch response in streamed format (printing character by character)
 ask("Tell me a joke", stream=True)
