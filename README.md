@@ -40,10 +40,10 @@ print(response)
 
 Here is the list of available models:
 
-1. **mistralai/Mixtral-8x7B-Instruct-v0.1**: A model trained by Mistral for instruction-based tasks with 8x7B parameters.
-2. **meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo**: Meta's large-scale model with 70 billion parameters designed for fast and accurate responses.
-3. **claude-3-haiku-20240307**: A model optimized for generating short, poetic, and haiku-style text, using Claude 3 architecture.
-4. **gpt-4o-mini**: A smaller variant of GPT-4 designed for quick, concise responses with less computation.
+1. ```mistralai/Mixtral-8x7B-Instruct-v0.1``` A model trained by Mistral for instruction-based tasks with 8x7B parameters.
+2. ```meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo``` Meta's large-scale model with 70 billion parameters designed for fast and accurate responses.
+3. ```claude-3-haiku-20240307``` A model optimized for generating short, poetic, and haiku-style text, using Claude 3 architecture.
+4. ```gpt-4o-mini``` A smaller variant of GPT-4 designed for quick, concise responses with less computation.
 
 
 # License
