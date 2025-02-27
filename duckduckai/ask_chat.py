@@ -4,7 +4,6 @@ import json
 def fetch_x_vqd_token():
     """
     Fetches the X-Vqd-4 token from DuckDuckGo status endpoint.
-
     Returns:
         str: The X-Vqd-4 token if found, None otherwise.
     """
@@ -22,33 +21,29 @@ def fetch_x_vqd_token():
         "Priority": "u=1, i",
         "X-Vqd-Accept": "1",
     }
-
     status_response = requests.get(status_url, headers=headers)
     if status_response.status_code != 200:
         return None  
-
     x_vqd_4 = status_response.headers.get("X-Vqd-4")
     if not x_vqd_4:
         return None 
-
     return x_vqd_4
 
-
-def ask(query, stream=True, model="gpt-4o-mini"):
+def ask(query, stream=True, model="gpt-4o-mini", token=None):
     """
     Fetches the response from DuckDuckGo's chat API and processes it.
-
     Args:
         query (str): The query to send to the API.
         stream (bool): Whether to stream the response (True) or fetch it all at once (False).
         model (str): The model to use for the query (default is "gpt-4o-mini").
-
+        token (str, optional): A previously generated X-Vqd-4 token. If None, a new token will be fetched.
     Returns:
-        str or None: The full message if not streamed, or None if streamed.
+        tuple: (result, token) where result is the full message if not streamed or None if streamed,
+               and token is the X-Vqd-4 token used (can be reused in future calls)
     """
-    x_vqd_4 = fetch_x_vqd_token()
+    x_vqd_4 = token if token else fetch_x_vqd_token()
     if not x_vqd_4:
-        return "Failed to fetch token" 
+        return "Failed to fetch token", None
 
     chat_url = "https://duckduckgo.com/duckchat/v1/chat"
     chat_headers = {
@@ -65,13 +60,21 @@ def ask(query, stream=True, model="gpt-4o-mini"):
         "Sec-Fetch-Dest": "empty",
         "Priority": "u=1, i",
     }
-
+    
     payload = {
         "model": model,
         "messages": [{"role": "user", "content": query}]
     }
+    
     response = requests.post(chat_url, headers=chat_headers, json=payload, stream=True)
-
+    
+    if response.status_code == 401 and token:
+        new_token = fetch_x_vqd_token()
+        if new_token:
+            return ask(query, stream, model, new_token)
+        else:
+            return "Failed to fetch new token after 401 error", None
+    
     full_message = ""
     for line in response.iter_lines():
         if line:
@@ -88,8 +91,7 @@ def ask(query, stream=True, model="gpt-4o-mini"):
                             full_message += json_data["message"]
                 except json.JSONDecodeError:
                     pass  
-
+    
     if not stream:
-        return full_message
-
-    return None  
+        return full_message, x_vqd_4
+    return None, x_vqd_4
