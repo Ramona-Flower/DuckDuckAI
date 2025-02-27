@@ -16,7 +16,7 @@ You can interact with DuckDuckAI by calling the `ask` function. It supports both
 
 ### Example
 
-```py
+```python
 from duckduckai import ask
 
 # Fetch response in streamed format (printing character by character)
@@ -25,30 +25,45 @@ ask("Tell me a joke", stream=True)
 # Fetch response as a complete message
 response = ask("Tell me a joke", stream=False)
 print(response)
-
 ```
 
-### Parameters Table
+### Parameters
 
 | Parameter | Type  | Description                                                         | Default       |
 |-----------|-------|---------------------------------------------------------------------|---------------|
 | query     | str   | The search query string.                                             | Required      |
 | stream    | bool  | Whether to stream results or fetch them all at once.                 | True          |
-| model     | str   | The model to use for the response (e.g., gpt-4o-mini).               | gpt-4o-mini   |
+| model     | str   | The model to use for the response.                                   | gpt-4o-mini   |
 
-### List of Models
+## Available Models
 
-Here is the list of available models:
+DuckDuckAI currently supports the following models:
 
-1. ```mistralai/Mistral-Small-24B-Instruct-2501``` A model trained by Mistral for instruction-based tasks with 24 billion parameters.
-2. ```meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo``` Meta's large-scale model with 70 billion parameters designed for fast and accurate responses.
-3. ```claude-3-haiku-20240307``` A model optimized for generating short, poetic, and haiku-style text, using Claude 3 architecture.
-4. ```gpt-4o-mini``` A smaller variant of GPT-4 designed for quick, concise responses with less computation.
-6. ```o3-mini``` A compact and efficient AI model optimized for lightweight performance.
+| Model ID | Description |
+|----------|-------------|
+| `gpt-4o-mini` | A smaller variant of GPT-4o designed for quick, concise responses with less computation. |
+| `meta-llama/Llama-3.3-70B-Instruct-Turbo` | Meta's large-scale Llama 3.3 model with 70 billion parameters designed for fast and accurate responses. |
+| `claude-3-haiku-20240307` | Anthropic's Claude 3 Haiku model optimized for efficient, high-quality responses. |
+| `mistralai/Mistral-Small-24B-Instruct-2501` | Mistral AI's 24 billion parameter model trained for instruction-based tasks. |
+| `o3-mini` | OpenAI's compact reasoning model optimized for lightweight performance. |
 
-Removed models list:
-1. ```mistralai/Mixtral-8x7B-Instruct-v0.1``` A model trained by Mistral for instruction-based tasks with 8x7B parameters. (Replaced for Mistral Small 3)
+Additional models may be available but subject to access restrictions. Some models may require specific permissions or may not be available in all regions.
 
+## Advanced Usage
 
-# License
+You can reuse the authentication token to make multiple requests more efficiently:
+
+```python
+from duckduckai import ask, fetch_token
+
+# Fetch a token once
+token = fetch_token()
+
+# Use the same token for multiple requests
+response1 = ask("What is quantum computing?", model="gpt-4o-mini", token=token)
+response2 = ask("Explain neural networks", model="claude-3-haiku-20240307", token=token)
+```
+
+## License
+
 This project is licensed under the Apache-2.0 license - see the LICENSE file for details.
