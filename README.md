@@ -54,14 +54,14 @@ Additional models may be available but subject to access restrictions. Some mode
 You can reuse the authentication token to make multiple requests more efficiently:
 
 ```python
-from duckduckai import ask, fetch_token
+from duckduckai import ask, fetch_x_vqd_token
 
 # Fetch a token once
-token = fetch_token()
+token = fetch_x_vqd_token()
 
 # Use the same token for multiple requests
-response1 = ask("What is quantum computing?", model="gpt-4o-mini", token=token)
-response2 = ask("Explain neural networks", model="claude-3-haiku-20240307", token=token)
+response1 = ask("What is quantum computing?", model="gpt-4o-mini", token=token)[0]  # Do not put [0] if you want the token in the response
+response2 = ask("Explain neural networks", model="claude-3-haiku-20240307", token=token)[0] # Do not put [0] if you want the token in the response
 ```
 
 ## License
