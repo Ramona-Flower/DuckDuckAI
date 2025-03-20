@@ -5,7 +5,7 @@ def fetch_x_vqd_token():
     """
     Fetches the X-Vqd-4 token from DuckDuckGo status endpoint.
     Returns:
-        str: The X-Vqd-4 token if found, None otherwise.
+        tuple: (X-Vqd-4 token, X-Vqd-Hash-1 token) if found, (None, None) otherwise.
     """
     status_url = "https://duckduckgo.com/duckchat/v1/status"
     headers = {
@@ -21,30 +21,36 @@ def fetch_x_vqd_token():
         "Priority": "u=1, i",
         "X-Vqd-Accept": "1",
     }
-    status_response = requests.get(status_url, headers=headers)
-    if status_response.status_code != 200:
-        return None  
-    x_vqd_4 = status_response.headers.get("X-Vqd-4")
-    if not x_vqd_4:
-        return None 
-    return x_vqd_4
+    response = requests.get(status_url, headers=headers)
+    
+    if response.status_code != 200:
+        return None, None
+    
+    x_vqd_4 = response.headers.get("X-Vqd-4")
+    x_vqd_hash_1 = response.headers.get("x-vqd-hash-1")
+    
+    return x_vqd_4, x_vqd_hash_1
 
-def ask(query, stream=True, model="gpt-4o-mini", token=None):
+def ask(query, stream=True, model="gpt-4o-mini", token=None, token_hash=None):
     """
-    Fetches the response from DuckDuckGo's chat API and processes it.
+    Fetches the response from DuckDuckGo's chat API.
+    
     Args:
         query (str): The query to send to the API.
         stream (bool): Whether to stream the response (True) or fetch it all at once (False).
         model (str): The model to use for the query (default is "gpt-4o-mini").
-        token (str, optional): A previously generated X-Vqd-4 token. If None, a new token will be fetched.
+        token (str, optional): A manually provided X-Vqd-4 token. If None, a new token will be fetched.
+        token_hash (str, optional): A manually provided X-Vqd-Hash-1 token. If None, a new token hash will be fetched.
+    
     Returns:
-        tuple: (result, token) where result is the full message if not streamed or None if streamed,
-               and token is the X-Vqd-4 token used (can be reused in future calls)
+        tuple: (result, token, token_hash) where result is the full message if not streamed or None if streamed,
+               and token/token_hash are the X-Vqd-4 and X-Vqd-Hash-1 tokens used (can be reused in future calls).
     """
-    x_vqd_4 = token if token else fetch_x_vqd_token()
-    if not x_vqd_4:
-        return "Failed to fetch token", None
-
+    if not token or not token_hash:
+        token, token_hash = fetch_x_vqd_token()
+        if not token:
+            return "Failed to fetch token", None, None
+    
     chat_url = "https://duckduckgo.com/duckchat/v1/chat"
     chat_headers = {
         "Accept": "text/event-stream",
@@ -52,7 +58,8 @@ def ask(query, stream=True, model="gpt-4o-mini", token=None):
         "Referer": "https://duckduckgo.com/",
         "Origin": "https://duckduckgo.com",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-        "X-Vqd-4": x_vqd_4,
+        "X-Vqd-4": token,
+        "x-vqd-hash-1": token_hash,
         "Dnt": "1",
         "Sec-Gpc": "1",
         "Sec-Fetch-Site": "same-origin",
@@ -68,12 +75,12 @@ def ask(query, stream=True, model="gpt-4o-mini", token=None):
     
     response = requests.post(chat_url, headers=chat_headers, json=payload, stream=True)
     
-    if response.status_code == 401 and token:
-        new_token = fetch_x_vqd_token()
+    if response.status_code == 401:
+        new_token, new_token_hash = fetch_x_vqd_token()
         if new_token:
-            return ask(query, stream, model, new_token)
+            return ask(query, stream, model, new_token, new_token_hash)
         else:
-            return "Failed to fetch new token after 401 error", None
+            return "Failed to fetch new token after 401 error", None, None
     
     full_message = ""
     for line in response.iter_lines():
@@ -93,5 +100,5 @@ def ask(query, stream=True, model="gpt-4o-mini", token=None):
                     pass  
     
     if not stream:
-        return full_message, x_vqd_4
-    return None, x_vqd_4
+        return full_message, token, token_hash
+    return None, token, token_hash
