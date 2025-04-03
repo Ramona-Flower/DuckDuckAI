@@ -20,7 +20,7 @@ You can interact with DuckDuckAI by calling the `ask` function. It supports both
 from duckduckai import ask
 
 # Fetch response in streamed format (printing character by character)
-ask("Tell me a joke", stream=True)[0] # Use 0 if you want to retrieve it inside a variable.
+ask("Tell me a joke", stream=True)[0] # Use 0 if you want to retrieve the response only (No Cookies)
 
 # Fetch response as a complete message
 response = ask("Tell me a joke", stream=False)
